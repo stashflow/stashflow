@@ -13,18 +13,33 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the session from the URL
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
+        // Parse the hash parameters
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
+
+        console.log('Auth callback received:', { accessToken, refreshToken, type });
+
+        if (!accessToken || !refreshToken) {
+          throw new Error('No authentication tokens found in URL');
+        }
+
+        // Set the session using the tokens
+        const { data: { session }, error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+
         if (sessionError) {
           throw sessionError;
         }
 
         if (!session) {
-          throw new Error('No session found');
+          throw new Error('Failed to establish session');
         }
 
-        console.log('Session obtained:', session.user.id);
+        console.log('Session established:', session.user.id);
 
         // Get the user profile
         const { data: profile, error: profileError } = await supabase
@@ -61,7 +76,7 @@ export default function AuthCallback() {
         // Clear any hash from the URL to prevent redirect loops
         window.location.hash = '';
         
-        // Redirect to home page using window.location to ensure a clean redirect
+        // Redirect to home page
         window.location.href = window.location.origin + window.location.pathname;
       } catch (err) {
         console.error('Auth callback error:', err);

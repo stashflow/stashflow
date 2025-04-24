@@ -58,7 +58,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           },
         });
-        if (error) throw error;
+        
+        if (error) {
+          console.error('OAuth error:', error);
+          throw error;
+        }
+        
+        // The browser will redirect to the OAuth provider
+        return;
       } else if (provider === 'email' && credentials) {
         const { error } = await supabase.auth.signInWithPassword({
           email: credentials.email,
