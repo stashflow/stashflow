@@ -68,15 +68,13 @@ export default function AuthCallback() {
           // If no profile exists, create one
           const { error: createError } = await supabase
             .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                username: session.user.email?.split('@')[0] || 'user',
-                full_name: session.user.user_metadata?.full_name || '',
-                avatar_url: session.user.user_metadata?.avatar_url || null,
-                updated_at: new Date().toISOString()
-              }
-            ]);
+            .insert({
+              id: session.user.id,
+              username: session.user.email?.split('@')[0] || 'user',
+              full_name: session.user.user_metadata?.full_name || '',
+              avatar_url: session.user.user_metadata?.avatar_url || null,
+              updated_at: new Date().toISOString()
+            });
 
           if (createError) {
             console.error('Profile creation error:', createError);
@@ -95,13 +93,14 @@ export default function AuthCallback() {
         window.location.hash = '';
         
         // Redirect to home page using window.location to ensure a clean redirect
-        window.location.href = '/';
+        // Use the base URL for GitHub Pages
+        window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
       } catch (err) {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
-        // Redirect to auth page on error
-        window.location.href = '/auth';
+        // Redirect to auth page on error, maintaining GitHub Pages base path
+        window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/auth';
       } finally {
         setProcessing(false);
       }

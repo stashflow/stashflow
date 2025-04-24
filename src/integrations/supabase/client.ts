@@ -13,10 +13,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create headers object with the API key
-const headers = new Headers();
-headers.set('apikey', supabaseAnonKey);
-headers.set('Authorization', `Bearer ${supabaseAnonKey}`);
+// Get the base path for GitHub Pages
+const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +26,9 @@ export const supabase = createClient<Database>(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      // We'll handle the redirect URL in the signIn method instead
     },
     global: {
       headers: {
