@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/stashflow/",  // Base URL for GitHub Pages
+  base: "/",  // Base URL for GitHub Pages (root path)
   server: {
     host: "0.0.0.0",
     port: 8080,
