@@ -1,0 +1,204 @@
+/* Theme Variables */
+:root {
+  /* Default theme colors - will be overridden by JavaScript */
+  --color-primary: #2196f3;
+  --color-secondary: #9c27b0;
+  --color-background: #121212;
+  --color-card: #1e1e1e;
+  --color-text: #e0e0e0;
+  --color-accent: #1de9b6;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  --color-border: #333333;
+
+  /* Spacing system */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  /* Typography */
+  --font-primary: 'Inter', system-ui, sans-serif;
+  --font-secondary: 'Georgia', serif;
+  
+  /* Borders */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Global theme styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Light/Dark Theme-specific styles */
+[data-theme-type="light"] {
+  --menu-background: #ffffff;
+  --menu-text: #2c2c2c;
+  --menu-hover: rgba(0, 0, 0, 0.05);
+  --menu-active: rgba(0, 0, 0, 0.1);
+  --menu-border: rgba(0, 0, 0, 0.1);
+  --shadow-intensity: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme-type="dark"] {
+  --menu-background: #1a1a1a;
+  --menu-text: #e0e0e0;
+  --menu-hover: rgba(255, 255, 255, 0.05);
+  --menu-active: rgba(255, 255, 255, 0.1);
+  --menu-border: rgba(255, 255, 255, 0.1);
+  --shadow-intensity: rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation styling based on theme type */
+.main-nav {
+  background-color: var(--menu-background);
+  color: var(--menu-text);
+  border-bottom: 1px solid var(--menu-border);
+}
+
+.main-nav a {
+  color: var(--menu-text);
+}
+
+.main-nav a:hover {
+  background-color: var(--menu-hover);
+}
+
+.main-nav a.active {
+  background-color: var(--menu-active);
+}
+
+/* Theme-specific styles */
+
+/* Glass Morphism theme special effects */
+[data-theme="glassMorphism"] {
+  background: linear-gradient(135deg, var(--color-background), var(--color-backgroundEnd));
+}
+
+[data-theme="glassMorphism"] .card,
+[data-theme="glassMorphism"] .glass-card {
+  background: var(--color-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="glassMorphism"] .glass-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 8px var(--color-accent);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Neo-Brutalism theme special effects */
+[data-theme="neoBrutalism"] .card,
+[data-theme="neoBrutalism"] .neo-card {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  box-shadow: 4px 4px 0 var(--color-border);
+}
+
+[data-theme="neoBrutalism"] .neo-card:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--color-border);
+}
+
+/* Dark theme special effects */
+[data-theme="dark"] {
+  background-color: var(--color-background);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .card:hover {
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* Monochrome special effects */
+[data-theme="monochrome"] img {
+  filter: grayscale(100%);
+}
+
+[data-theme="monochrome"] .accent {
+  color: var(--color-accent);
+}
+
+/* Common component styling based on theme variables */
+.card {
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), background-color var(--transition-normal);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.button,
+button:not(.unstyled) {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem 1rem;
+  transition: background-color var(--transition-normal), transform var(--transition-fast);
+}
+
+.button:hover,
+button:not(.unstyled):hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, white);
+  transform: translateY(-2px);
+}
+
+.button-secondary {
+  background-color: var(--color-secondary);
+}
+
+.button-outline {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.button-outline:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+/* Custom scrollbar for all themes */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--color-background) 90%, var(--color-card));
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-primary) 80%, black);
+} 
