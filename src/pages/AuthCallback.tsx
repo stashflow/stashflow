@@ -13,9 +13,19 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Check if we have a code in the URL (OAuth flow)
+        // Parse the hash if it exists
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        // Check if we have a code in the URL (OAuth flow) or access_token in hash
         const params = new URLSearchParams(location.search);
         const code = params.get('code');
+        
+        if (!code && !accessToken) {
+          throw new Error('No authentication code or token found');
+        }
+
+        let session;
         
         if (code) {
           console.log('Auth code detected in URL, processing OAuth callback...');
@@ -32,20 +42,17 @@ export default function AuthCallback() {
             throw new Error('No session returned from code exchange');
           }
           
+          session = authData.session;
           console.log('Successfully exchanged code for session');
+        } else if (accessToken) {
+          // If we have an access token in the hash, set the session
+          const { data: { session: authSession }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) throw sessionError;
+          session = authSession;
         }
         
-        // Now get the current session
-        const { data, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-
-        const { session } = data;
         if (!session) {
-          throw new Error('No session found');
+          throw new Error('No session established');
         }
 
         console.log('Session obtained:', session.user.id);
@@ -93,6 +100,7 @@ export default function AuthCallback() {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
+        // Redirect to auth page on error
         window.location.href = '/auth';
       } finally {
         setProcessing(false);
@@ -100,20 +108,27 @@ export default function AuthCallback() {
     };
 
     handleAuthCallback();
-  }, [location, navigate]);
+  }, [location]);
 
   if (processing) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Completing sign in...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">{error}</div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="text-red-500 mb-4">{error}</div>
+        <button 
+          onClick={() => window.location.href = '/auth'}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Return to Sign In
+        </button>
       </div>
     );
   }
