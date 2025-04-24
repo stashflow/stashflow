@@ -2,8 +2,6 @@
 
 Stash is a modern web application that allows students to share and discover class notes. Built with React, TypeScript, and Supabase, it features a beautiful UI powered by Tailwind CSS and Shadcn/UI components.
 
-🌐 **[View Live Demo](https://sickleedge.github.io/stash/)**
-
 ## Features
 
 - 📚 Browse and search class notes

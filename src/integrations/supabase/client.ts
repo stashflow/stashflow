@@ -2,23 +2,14 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-declare global {
-  interface Window {
-    SUPABASE_CONFIG: {
-      url: string;
-      anonKey: string;
-    };
-  }
-}
-
-const supabaseUrl = window.SUPABASE_CONFIG?.url;
-const supabaseAnonKey = window.SUPABASE_CONFIG?.anonKey;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Anon Key:', supabaseAnonKey?.substring(0, 10) + '...');
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase configuration. Please check config.js file.');
+  throw new Error('Missing Supabase environment variables');
 }
 
 // Create headers object with the API key
@@ -30,7 +21,7 @@ headers.set('Authorization', `Bearer ${supabaseAnonKey}`);
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(
-  supabaseUrl,
+  supabaseUrl, 
   supabaseAnonKey,
   {
     auth: {
