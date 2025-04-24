@@ -6,7 +6,10 @@
     <script>
       // Get the current path and redirect to index.html with that path
       const path = window.location.pathname;
-      window.location.href = '/index.html' + path;
+      // Remove any existing /index.html from the path to prevent loops
+      const cleanPath = path.replace(/\/index\.html/g, '');
+      // Redirect to the root with the hash
+      window.location.href = '/#' + cleanPath;
     </script>
   </head>
   <body>

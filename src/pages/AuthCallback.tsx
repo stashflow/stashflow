@@ -84,47 +84,39 @@ export default function AuthCallback() {
         // Show success message
         toast.success('Successfully signed in!');
         
-        // Wait a moment to ensure the session is properly set
-        setTimeout(() => {
-          // Redirect to home page
-          navigate('/', { replace: true });
-        }, 500);
+        // Clear any hash from the URL to prevent redirect loops
+        window.location.hash = '';
+        
+        // Redirect to home page using window.location to ensure a clean redirect
+        window.location.href = '/';
       } catch (err) {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
-        navigate('/auth', { replace: true });
+        window.location.href = '/auth';
       } finally {
         setProcessing(false);
       }
     };
 
     handleAuthCallback();
-  }, [navigate, location]);
+  }, [location, navigate]);
 
-  if (error) {
+  if (processing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="bg-card p-8 rounded-md shadow-md max-w-md text-center" style={{ backgroundColor: '#141414', borderColor: '#333' }}>
-          <div className="text-red-500 mb-4">{error}</div>
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Return to Sign In
-          </button>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="bg-card p-8 rounded-md shadow-md max-w-md text-center" style={{ backgroundColor: '#141414', borderColor: '#333' }}>
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-4 mx-auto" />
-        <p className="text-lg font-medium" style={{ color: 'white' }}>Completing sign in...</p>
-        <p className="text-sm" style={{ color: '#999' }}>Please wait while we redirect you.</p>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 } 
