@@ -28,7 +28,6 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      // We'll handle the redirect URL in the signIn method instead
     },
     global: {
       headers: {

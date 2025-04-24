@@ -13,46 +13,15 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Parse the hash if it exists
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
+        // Get the session from the URL
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        // Check if we have a code in the URL (OAuth flow) or access_token in hash
-        const params = new URLSearchParams(location.search);
-        const code = params.get('code');
-        
-        if (!code && !accessToken) {
-          throw new Error('No authentication code or token found');
+        if (sessionError) {
+          throw sessionError;
         }
 
-        let session;
-        
-        if (code) {
-          console.log('Auth code detected in URL, processing OAuth callback...');
-          
-          // Exchange the code for a session
-          const { data: authData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          
-          if (exchangeError) {
-            console.error('Code exchange error:', exchangeError);
-            throw exchangeError;
-          }
-          
-          if (!authData.session) {
-            throw new Error('No session returned from code exchange');
-          }
-          
-          session = authData.session;
-          console.log('Successfully exchanged code for session');
-        } else if (accessToken) {
-          // If we have an access token in the hash, set the session
-          const { data: { session: authSession }, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError) throw sessionError;
-          session = authSession;
-        }
-        
         if (!session) {
-          throw new Error('No session established');
+          throw new Error('No session found');
         }
 
         console.log('Session obtained:', session.user.id);
@@ -93,14 +62,13 @@ export default function AuthCallback() {
         window.location.hash = '';
         
         // Redirect to home page using window.location to ensure a clean redirect
-        // Use the base URL for GitHub Pages
-        window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+        window.location.href = window.location.origin + window.location.pathname;
       } catch (err) {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
-        // Redirect to auth page on error, maintaining GitHub Pages base path
-        window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/auth';
+        // Redirect to auth page on error
+        window.location.href = window.location.origin + window.location.pathname + '#/auth';
       } finally {
         setProcessing(false);
       }
@@ -123,7 +91,7 @@ export default function AuthCallback() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="text-red-500 mb-4">{error}</div>
         <button 
-          onClick={() => window.location.href = '/auth'}
+          onClick={() => window.location.href = window.location.origin + window.location.pathname + '#/auth'}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Return to Sign In
