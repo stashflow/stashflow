@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import MainLayout from "@/layouts/MainLayout";
@@ -39,6 +39,13 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    // Handle direct navigation to /auth on GitHub Pages
+    if (window.location.hostname.includes('github.io') && window.location.pathname === '/auth') {
+      window.location.href = '/#/auth';
+    }
+  }, []);
+
   if (showSplash) {
     return <SplashAnimation isActive={true} />;
   }
@@ -62,13 +69,14 @@ const AppContent = () => {
       <Route path="/classes" element={<MainLayout><Classes /></MainLayout>} />
       <Route path="/notes" element={<MainLayout><Notes /></MainLayout>} />
       <Route path="/admin" element={<MainLayout><AdminDashboard /></MainLayout>} />
-      <Route path="*" element={<NotFound />} />
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   );
 };
 
 const App = () => (
-  <HashRouter>
+  <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
@@ -80,7 +88,7 @@ const App = () => (
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
-  </HashRouter>
+  </BrowserRouter>
 );
 
 export default App;

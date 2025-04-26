@@ -13,12 +13,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Simple way to detect if we're in GitHub Pages
-const isGitHubPages = window.location.hostname.includes('github.io');
-console.log('Is GitHub Pages:', isGitHubPages);
-
-// Always use hash-based routing for GitHub Pages
-const redirectUrl = `${window.location.origin}/#/auth/callback`;
+// Use HTML5 push state routing
+const redirectUrl = `${window.location.origin}/auth/callback`;
 console.log('Auth redirect URL:', redirectUrl);
 
 // Import the supabase client like this:
@@ -32,7 +28,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'implicit',
+      flowType: 'pkce',
       storage: {
         getItem: (key: string) => {
           const item = localStorage.getItem(key);
@@ -62,6 +58,5 @@ console.log('Supabase client configured with:', {
   url: supabaseUrl,
   origin: window.location.origin,
   pathname: window.location.pathname,
-  hash: window.location.hash,
   detectSessionInUrl: true
 });

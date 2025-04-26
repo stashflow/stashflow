@@ -15,7 +15,6 @@ export default function AuthCallback() {
       try {
         console.log('AuthCallback component mounted');
         console.log('Current URL:', window.location.href);
-        console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
         
         // First try to get the session directly
@@ -60,31 +59,26 @@ export default function AuthCallback() {
           return;
         }
 
-        // If no session exists, try to parse the hash parameters
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        // Parse the search parameters for the code
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get('code');
 
         console.log('Auth callback received:', { 
-          accessToken: accessToken ? 'present' : 'missing',
-          refreshToken: refreshToken ? 'present' : 'missing'
+          code: code ? 'present' : 'missing'
         });
 
-        if (!accessToken || !refreshToken) {
-          console.error('Missing tokens:', { accessToken, refreshToken });
-          throw new Error('No authentication tokens found in URL');
+        if (!code) {
+          console.error('Missing code in URL');
+          throw new Error('No authentication code found in URL');
         }
 
-        // Set the session using the tokens
-        console.log('Attempting to set session...');
-        const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        });
+        // Exchange the code for a session
+        console.log('Attempting to exchange code for session...');
+        const { data: { session }, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
-        if (setSessionError) {
-          console.error('Session error:', setSessionError);
-          throw setSessionError;
+        if (exchangeError) {
+          console.error('Code exchange error:', exchangeError);
+          throw exchangeError;
         }
 
         if (!session) {
@@ -124,9 +118,6 @@ export default function AuthCallback() {
 
         // Show success message
         toast.success('Successfully signed in!');
-        
-        // Clear the hash from the URL
-        window.history.replaceState(null, '', window.location.pathname);
         
         // Redirect to home page
         navigate('/');
