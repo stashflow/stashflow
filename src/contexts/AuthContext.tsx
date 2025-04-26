@@ -45,19 +45,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (provider === 'google') {
         console.log('Starting Google OAuth sign-in');
         
-        // For GitHub Pages, we need to use a path-based URL (no hash)
-        // The physical callback page will redirect to the hash-based route
-        const redirectUrl = window.location.origin + '/auth/callback';
+        // Get the redirectUrl from Supabase client to ensure consistency
+        // This is set in src/integrations/supabase/client.ts
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const redirectUrl = isGitHubPages 
+          ? `${window.location.origin}/auth_callback.html`
+          : `${window.location.origin}/#/auth/callback`;
         
         console.log('Auth redirect URL:', redirectUrl);
-        console.log('Current URL:', window.location.href);
         
         // Initiate OAuth sign-in
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
             redirectTo: redirectUrl,
-            skipBrowserRedirect: false,
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',
@@ -96,6 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // Get the redirectUrl from Supabase client to ensure consistency
+      const isGitHubPages = window.location.hostname.includes('github.io');
+      const redirectUrl = isGitHubPages 
+        ? `${window.location.origin}/auth_callback.html`
+        : `${window.location.origin}/#/auth/callback`;
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -103,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: redirectUrl,
         },
       });
 

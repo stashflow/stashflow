@@ -13,8 +13,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Get the base path for GitHub Pages
-const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+// Simple way to detect if we're in GitHub Pages
+const isGitHubPages = window.location.hostname.includes('github.io');
+console.log('Is GitHub Pages:', isGitHubPages);
+
+// Direct Supabase to auth_callback.html for GitHub Pages
+let redirectUrl;
+if (isGitHubPages) {
+  // GitHub Pages: Use a direct HTML file callback
+  redirectUrl = `${window.location.origin}/auth_callback.html`;
+} else {
+  // Development: Use hash-based routing
+  redirectUrl = `${window.location.origin}/#/auth/callback`;
+}
+
+console.log('Auth redirect URL:', redirectUrl);
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +40,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce',
+      // Don't specify a flowType - let Supabase decide the best approach
       storage: {
         getItem: (key: string) => {
           const item = localStorage.getItem(key);
@@ -57,5 +70,6 @@ console.log('Supabase client configured with:', {
   url: supabaseUrl,
   origin: window.location.origin,
   pathname: window.location.pathname,
-  hash: window.location.hash
+  hash: window.location.hash,
+  detectSessionInUrl: true
 });
