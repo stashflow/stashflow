@@ -35,8 +35,18 @@
       "continue": true
     },
     {
+      "src": "/auth/callback",
+      "dest": "/auth/callback"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 } 
