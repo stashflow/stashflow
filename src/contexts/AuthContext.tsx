@@ -45,7 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (provider === 'google') {
         // Get the current URL with hash-based routing
         const redirectUrl = new URL(window.location.href);
+        // Remove any existing hash
+        redirectUrl.hash = '';
+        // Add the callback hash
         redirectUrl.hash = '/auth/callback';
+        
+        console.log('Auth redirect URL:', redirectUrl.toString());
         
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
