@@ -31,8 +31,24 @@
   ],
   "rewrites": [
     {
+      "source": "/assets/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "source": "/(.*)\\.(js|mjs)",
+      "headers": {
+        "content-type": "application/javascript"
+      }
+    },
+    {
       "source": "/auth/callback",
       "destination": "/auth/callback"
+    },
+    {
+      "source": "/auth",
+      "destination": "https://stashflow-github-m8iu5a7u8-sickleedges-projects.vercel.app/auth"
     },
     {
       "source": "/(.*)",
