@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -13,28 +13,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { FcGoogle } from "react-icons/fc";
 import { FaEnvelope } from "react-icons/fa";
 import { signInWithGoogle } from "@/integrations/supabase/client";
-<<<<<<< HEAD
-import { Github } from 'lucide-react';
-
-export default function Auth() {
-  const navigate = useNavigate();
-  const { signIn, signUp, isLoading } = useAuth();
-=======
 
 export default function Auth() {
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
->>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-<<<<<<< HEAD
-=======
   const [isLoading, setIsLoading] = useState(false);
->>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
+
+  useEffect(() => {
+    // Redirect to preview domain if we're on the main domain
+    if (window.location.hostname === 'stashflow.vercel.app') {
+      window.location.href = 'https://stashflow-github-m8iu5a7u8-sickleedges-projects.vercel.app/auth';
+      return;
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,58 +54,6 @@ export default function Auth() {
     }
   };
 
-<<<<<<< HEAD
-  const handleGitHubSignIn = () => signIn('github');
-  const handleGoogleSignIn = () => signIn('google');
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Welcome to StashFlow</CardTitle>
-          <CardDescription>
-            Sign in to access your notes and collaborate with classmates
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full"
-            variant="outline"
-          >
-            <FcGoogle className="mr-2 h-5 w-5" />
-            {isLoading ? 'Loading...' : 'Sign in with Google'}
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <Button
-            onClick={handleGitHubSignIn}
-            disabled={isLoading}
-            className="w-full"
-            variant="outline"
-          >
-            <Github className="mr-2 h-5 w-5" />
-            {isLoading ? 'Loading...' : 'Sign in with GitHub'}
-          </Button>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </CardFooter>
-      </Card>
-=======
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
@@ -153,7 +98,7 @@ export default function Auth() {
         </div>
 
         {/* Right side - Auth form */}
-        <Card className="flex-1 max-w-md" style={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)" }}>
+        <Card className="flex-1 max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl" style={{ color: "var(--color-text)" }}>
               {isSignUp ? 'Create Account' : 'Sign In'}
@@ -170,6 +115,7 @@ export default function Auth() {
                 <p className="text-sm" style={{ color: "var(--color-error)" }}>{error}</p>
               </div>
             )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div className="space-y-2">
@@ -209,6 +155,7 @@ export default function Auth() {
                   style={{ backgroundColor: "var(--color-input)", color: "var(--color-text)", borderColor: "var(--color-border)" }}
                 />
               </div>
+              
               <Button 
                 type="submit" 
                 className="w-full"
@@ -255,7 +202,6 @@ export default function Auth() {
           </CardFooter>
         </Card>
       </div>
->>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
     </div>
   );
 }
