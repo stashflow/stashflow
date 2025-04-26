@@ -11,7 +11,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ],
-  base: '/stash/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
