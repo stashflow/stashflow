@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { LogIn } from 'lucide-react';
 import { Book, Upload, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -45,7 +46,26 @@ export default function Auth() {
     setLoading(true);
     setError(null);
     try {
-      await signIn('google');
+      // Direct Supabase OAuth call with explicit redirectTo
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      });
+      
+      console.log('OAuth initiated:', { 
+        url: data?.url ? 'Generated' : 'Missing',
+        error: error?.message
+      });
+      
+      if (error) throw error;
+      
+      // If we get here, the browser will be redirected by Supabase
     } catch (error) {
       console.error('Google sign in error:', error);
       setError(error instanceof Error ? error.message : 'Failed to sign in with Google. Please try again.');
