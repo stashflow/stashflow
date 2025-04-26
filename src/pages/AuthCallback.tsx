@@ -125,6 +125,9 @@ export default function AuthCallback() {
         // Show success message
         toast.success('Successfully signed in!');
         
+        // Clear the hash from the URL
+        window.history.replaceState(null, '', window.location.pathname);
+        
         // Redirect to home page
         navigate('/');
       } catch (err) {

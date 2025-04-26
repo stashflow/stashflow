@@ -17,16 +17,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const isGitHubPages = window.location.hostname.includes('github.io');
 console.log('Is GitHub Pages:', isGitHubPages);
 
-// Direct Supabase to auth_callback.html for GitHub Pages
-let redirectUrl;
-if (isGitHubPages) {
-  // GitHub Pages: Use a direct HTML file callback
-  redirectUrl = `${window.location.origin}/auth_callback.html`;
-} else {
-  // Development: Use hash-based routing
-  redirectUrl = `${window.location.origin}/#/auth/callback`;
-}
-
+// Always use hash-based routing for GitHub Pages
+const redirectUrl = `${window.location.origin}/#/auth/callback`;
 console.log('Auth redirect URL:', redirectUrl);
 
 // Import the supabase client like this:
