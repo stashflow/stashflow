@@ -20,15 +20,29 @@ export default function AuthCallback() {
         console.log('Location state:', location.state);
         console.log('Location pathname:', location.pathname);
         
-        // Check if we have code+state in search params (implicit flow)
+        // Check if we have code+state in search params (PKCE flow)
         const searchParams = new URLSearchParams(window.location.search);
         const code = searchParams.get('code');
         const state = searchParams.get('state');
+        const errorParam = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
         
-        console.log('Search params:', { code: code ? 'present' : 'missing', state: state ? 'present' : 'missing' });
+        console.log('Search params:', { 
+          code: code ? 'present' : 'missing', 
+          state: state ? 'present' : 'missing',
+          error: errorParam || 'none',
+          errorDescription: errorDescription || 'none'
+        });
         
+        // Check for OAuth errors first
+        if (errorParam) {
+          console.error('OAuth error returned:', { error: errorParam, description: errorDescription });
+          throw new Error(errorDescription || `Authentication failed: ${errorParam}`);
+        }
+        
+        // Handle PKCE flow (code + state)
         if (code && state) {
-          console.log('Detected authorization code flow, attempting to exchange code for session');
+          console.log('Detected authorization code flow (PKCE), attempting to exchange code for session');
           try {
             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
             console.log('Code exchange result:', { success: !!data.session, error: error?.message });
@@ -78,6 +92,7 @@ export default function AuthCallback() {
             }
           } catch (exchangeError) {
             console.error('Code exchange error:', exchangeError);
+            throw exchangeError;
           }
         }
         

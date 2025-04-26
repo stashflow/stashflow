@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // This page handles OAuth redirects from Supabase when hash-based routing fails
+    window.onload = function() {
+      console.log('OAuth redirect handler - capturing callback');
+      
+      // Preserve all query parameters
+      const currentUrl = new URL(window.location.href);
+      const params = currentUrl.searchParams;
+      
+      // Log the parameters for debugging
+      console.log('Received auth parameters:', {
+        code: params.get('code') ? 'present' : 'missing',
+        state: params.get('state') ? 'present' : 'missing',
+        error: params.get('error') || 'none',
+        error_description: params.get('error_description') || 'none'
+      });
+      
+      // Create redirect URL with hash-based routing
+      let redirectUrl = window.location.origin + '/#/auth/callback';
+      
+      // Append any query parameters
+      if (params.toString()) {
+        redirectUrl += '?' + params.toString();
+      }
+      
+      console.log('Redirecting to hash-based route:', redirectUrl);
+      
+      // Redirect to the correct hash-based URL
+      window.location.href = redirectUrl;
+    };
+  </script>
+</head>
+<body>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui, sans-serif;">
+    <div style="text-align: center;">
+      <h2>Completing sign-in...</h2>
+      <p>Please wait while we redirect you.</p>
+    </div>
+  </div>
+</body>
+</html> 

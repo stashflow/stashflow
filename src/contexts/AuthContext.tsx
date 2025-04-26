@@ -45,13 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (provider === 'google') {
         console.log('Starting Google OAuth sign-in');
         
-        // For GitHub Pages, we need to use the hash-based redirect URL
-        const redirectUrl = window.location.origin + '/#/auth/callback';
+        // For GitHub Pages, we need to use a path-based URL (no hash)
+        // The physical callback page will redirect to the hash-based route
+        const redirectUrl = window.location.origin + '/auth/callback';
         
         console.log('Auth redirect URL:', redirectUrl);
         console.log('Current URL:', window.location.href);
         
-        // Use PKCE flow for better security and support
+        // Initiate OAuth sign-in
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -102,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/#/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
