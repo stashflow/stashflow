@@ -1,16 +1,35 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+=======
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
 
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+<<<<<<< HEAD
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
+=======
+  const [processing, setProcessing] = useState(true);
+
+  useEffect(() => {
+    // Handle the auth response
+    const handleAuthResponse = async () => {
+      try {
+        setProcessing(true);
+        console.log('Auth callback component mounted');
+        console.log('Current URL:', window.location.href);
+        
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
         // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
@@ -24,6 +43,12 @@ export default function AuthCallback() {
             email: session.user.email
           });
           
+<<<<<<< HEAD
+=======
+          // Get or create user profile
+          await handleUserProfile(session);
+          
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
           // Show success message
           toast.success('Successfully signed in!');
           
@@ -46,6 +71,12 @@ export default function AuthCallback() {
               email: refreshedSession.user.email
             });
             
+<<<<<<< HEAD
+=======
+            // Get or create user profile
+            await handleUserProfile(refreshedSession);
+            
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
             // Show success message
             toast.success('Successfully signed in!');
             
@@ -60,12 +91,59 @@ export default function AuthCallback() {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
+<<<<<<< HEAD
       }
     };
 
     handleCallback();
   }, [navigate]);
 
+=======
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    async function handleUserProfile(session) {
+      // Get the user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        // If no profile exists, create one
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            username: session.user.email?.split('@')[0] || 'user',
+            full_name: session.user.user_metadata?.full_name || '',
+            avatar_url: session.user.user_metadata?.avatar_url || null,
+            updated_at: new Date().toISOString()
+          });
+
+        if (createError) {
+          console.error('Profile creation error:', createError);
+          throw createError;
+        }
+      }
+    }
+
+    handleAuthResponse();
+  }, [navigate]);
+
+  if (processing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Completing sign in...</span>
+      </div>
+    );
+  }
+
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -80,10 +158,14 @@ export default function AuthCallback() {
     );
   }
 
+<<<<<<< HEAD
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Loader2 className="h-8 w-8 animate-spin" />
       <span className="ml-2">Completing sign in...</span>
     </div>
   );
+=======
+  return null;
+>>>>>>> 0a65a24826f34e0bd214347a0d3247e8c86c32b7
 } 
