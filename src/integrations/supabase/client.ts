@@ -13,8 +13,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Use HTML5 push state routing
-const redirectUrl = `${window.location.origin}/auth/callback`;
+// Get the base URL of the app
+const isGitHubPages = window.location.hostname.includes('github.io');
+const baseUrl = window.location.origin;
+
+// For Github Pages, we need to use the static file-based auth callback
+// For other deploys, use the standard path
+const redirectUrl = isGitHubPages ? 
+  `${baseUrl}/auth_callback.html` : 
+  `${baseUrl}/auth/callback`;
+
 console.log('Auth redirect URL:', redirectUrl);
 
 // Import the supabase client like this:
@@ -28,19 +36,20 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce',
+      // We'll use different flow types depending on the environment
+      flowType: isGitHubPages ? 'implicit' : 'pkce',
       storage: {
         getItem: (key: string) => {
           const item = localStorage.getItem(key);
-          console.log(`Getting item from storage: ${key}`, item ? 'present' : 'missing');
+          console.log(`Getting storage: ${key}`, item ? 'present' : 'missing');
           return item;
         },
         setItem: (key: string, value: string) => {
-          console.log(`Setting item in storage: ${key}`, value ? 'value present' : 'value missing');
+          console.log(`Setting storage: ${key}`);
           localStorage.setItem(key, value);
         },
         removeItem: (key: string) => {
-          console.log(`Removing item from storage: ${key}`);
+          console.log(`Removing storage: ${key}`);
           localStorage.removeItem(key);
         }
       }
@@ -53,10 +62,30 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Log initial configuration
-console.log('Supabase client configured with:', {
+// Configure auth redirect URL
+// This is done separately from initialization to ensure compatibility
+console.log('Setting up sign-in with redirect URL:', redirectUrl);
+
+console.log('Supabase client config:', {
   url: supabaseUrl,
-  origin: window.location.origin,
-  pathname: window.location.pathname,
-  detectSessionInUrl: true
+  redirectUrl,
+  isGitHubPages,
+  flowType: isGitHubPages ? 'implicit' : 'pkce'
 });
+
+// Function to sign in with Google
+export const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectUrl
+    }
+  });
+  
+  if (error) {
+    console.error('Google sign-in error:', error);
+    throw error;
+  }
+  
+  return data;
+};

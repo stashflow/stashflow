@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import MainLayout from "@/layouts/MainLayout";
@@ -39,11 +39,11 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Log basic app info on start
   useEffect(() => {
-    // Handle direct navigation to /auth on GitHub Pages
-    if (window.location.hostname.includes('github.io') && window.location.pathname === '/auth') {
-      window.location.href = '/#/auth';
-    }
+    console.log('StashFlow Gallery starting...');
+    console.log('URL:', window.location.href);
+    console.log('isGitHubPages:', window.location.hostname.includes('github.io'));
   }, []);
 
   if (showSplash) {
@@ -75,8 +75,28 @@ const AppContent = () => {
   );
 };
 
+// The basename prop is important for GitHub Pages
+// It should be set to the repo name if deployed to GitHub Pages
+// For example, if your repo is at https://username.github.io/repo-name, 
+// basename should be "/repo-name"
+// For the main site domain (username.github.io), leave it empty
+const getBasename = () => {
+  // Get the pathname from the current URL
+  const { pathname } = window.location;
+  // Check if we're on GitHub Pages
+  if (window.location.hostname.includes('github.io')) {
+    // Check if we're on the main domain (username.github.io) or a project page
+    const parts = pathname.split('/');
+    // If we're on a project page, the first segment after the initial / will be the repo name
+    if (parts.length > 1 && parts[1] !== '') {
+      return '/' + parts[1];
+    }
+  }
+  return undefined;
+};
+
 const App = () => (
-  <BrowserRouter>
+  <BrowserRouter basename={getBasename()}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>

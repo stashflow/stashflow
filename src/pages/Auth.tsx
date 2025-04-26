@@ -10,6 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { LogIn } from 'lucide-react';
 import { Book, Upload, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { FcGoogle } from "react-icons/fc";
+import { FaEnvelope } from "react-icons/fa";
+import { signInWithGoogle } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -20,6 +23,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,34 +47,15 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
     try {
-      // Direct Supabase OAuth call with explicit redirectTo
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
-        }
-      });
-      
-      console.log('OAuth initiated:', { 
-        url: data?.url ? 'Generated' : 'Missing',
-        error: error?.message
-      });
-      
-      if (error) throw error;
-      
-      // If we get here, the browser will be redirected by Supabase
+      setIsLoading(true);
+      console.log('Starting Google sign-in...');
+      await signInWithGoogle();
+      // The OAuth redirect will happen automatically
     } catch (error) {
-      console.error('Google sign in error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to sign in with Google. Please try again.');
+      console.error('Google sign-in error:', error);
       toast.error('Failed to sign in with Google. Please try again.');
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -186,11 +171,11 @@ export default function Auth() {
               variant="outline"
               className="w-full"
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={isLoading}
               style={{ backgroundColor: "var(--color-input)", color: "var(--color-text)", borderColor: "var(--color-border)" }}
             >
-              <LogIn className="mr-2 h-4 w-4" />
-              Google
+              <FcGoogle className="mr-2 h-5 w-5" />
+              {isLoading ? 'Signing in...' : 'Sign in with Google'}
             </Button>
           </CardContent>
           <CardFooter className="flex justify-center">

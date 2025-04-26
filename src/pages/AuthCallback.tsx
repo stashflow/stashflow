@@ -1,139 +1,111 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(true);
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
+    // Handle the auth response
+    const handleAuthResponse = async () => {
       try {
-        console.log('AuthCallback component mounted');
+        setProcessing(true);
+        console.log('Auth callback component mounted');
         console.log('Current URL:', window.location.href);
-        console.log('Search:', window.location.search);
         
-        // First try to get the session directly
-        const { data: { session: existingSession }, error: sessionError } = await supabase.auth.getSession();
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (existingSession) {
-          console.log('Found existing session:', {
-            userId: existingSession.user.id,
-            email: existingSession.user.email
+        if (sessionError) {
+          throw sessionError;
+        }
+        
+        if (session) {
+          console.log('Session found:', {
+            userId: session.user.id,
+            email: session.user.email
           });
           
-          // Get the user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', existingSession.user.id)
-            .single();
-
-          if (profileError) {
-            // If no profile exists, create one
-            const { error: createError } = await supabase
-              .from('profiles')
-              .insert({
-                id: existingSession.user.id,
-                username: existingSession.user.email?.split('@')[0] || 'user',
-                full_name: existingSession.user.user_metadata?.full_name || '',
-                avatar_url: existingSession.user.user_metadata?.avatar_url || null,
-                updated_at: new Date().toISOString()
-              });
-
-            if (createError) {
-              console.error('Profile creation error:', createError);
-              throw createError;
-            }
-          }
-
+          // Get or create user profile
+          await handleUserProfile(session);
+          
           // Show success message
           toast.success('Successfully signed in!');
           
           // Redirect to home page
           navigate('/');
-          return;
-        }
-
-        // Parse the search parameters for the code
-        const searchParams = new URLSearchParams(window.location.search);
-        const code = searchParams.get('code');
-
-        console.log('Auth callback received:', { 
-          code: code ? 'present' : 'missing'
-        });
-
-        if (!code) {
-          console.error('Missing code in URL');
-          throw new Error('No authentication code found in URL');
-        }
-
-        // Exchange the code for a session
-        console.log('Attempting to exchange code for session...');
-        const { data: { session }, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (exchangeError) {
-          console.error('Code exchange error:', exchangeError);
-          throw exchangeError;
-        }
-
-        if (!session) {
-          console.error('No session established');
-          throw new Error('Failed to establish session');
-        }
-
-        console.log('Session established:', {
-          userId: session.user.id,
-          email: session.user.email
-        });
-
-        // Get the user profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          // If no profile exists, create one
-          const { error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: session.user.id,
-              username: session.user.email?.split('@')[0] || 'user',
-              full_name: session.user.user_metadata?.full_name || '',
-              avatar_url: session.user.user_metadata?.avatar_url || null,
-              updated_at: new Date().toISOString()
+        } else {
+          // If we don't have a session yet, let Supabase try to process any auth data in the URL
+          const { error: authError } = await supabase.auth.getUser();
+          
+          if (authError) {
+            throw authError;
+          }
+          
+          // Check again for session
+          const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+          
+          if (refreshedSession) {
+            console.log('Session established:', {
+              userId: refreshedSession.user.id,
+              email: refreshedSession.user.email
             });
-
-          if (createError) {
-            console.error('Profile creation error:', createError);
-            throw createError;
+            
+            // Get or create user profile
+            await handleUserProfile(refreshedSession);
+            
+            // Show success message
+            toast.success('Successfully signed in!');
+            
+            // Redirect to home page
+            navigate('/');
+          } else {
+            // No session found
+            throw new Error('No authentication session found. Please try signing in again.');
           }
         }
-
-        // Show success message
-        toast.success('Successfully signed in!');
-        
-        // Redirect to home page
-        navigate('/');
       } catch (err) {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
-        // Redirect to auth page on error
-        navigate('/auth');
       } finally {
         setProcessing(false);
       }
     };
 
-    handleAuthCallback();
-  }, [location, navigate]);
+    async function handleUserProfile(session) {
+      // Get the user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        // If no profile exists, create one
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            username: session.user.email?.split('@')[0] || 'user',
+            full_name: session.user.user_metadata?.full_name || '',
+            avatar_url: session.user.user_metadata?.avatar_url || null,
+            updated_at: new Date().toISOString()
+          });
+
+        if (createError) {
+          console.error('Profile creation error:', createError);
+          throw createError;
+        }
+      }
+    }
+
+    handleAuthResponse();
+  }, [navigate]);
 
   if (processing) {
     return (
