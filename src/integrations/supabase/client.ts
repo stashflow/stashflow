@@ -40,7 +40,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      // Don't specify a flowType - let Supabase decide the best approach
+      flowType: 'implicit',
       storage: {
         getItem: (key: string) => {
           const item = localStorage.getItem(key);
