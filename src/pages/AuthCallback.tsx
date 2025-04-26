@@ -13,33 +13,51 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        console.log('AuthCallback component mounted');
+        console.log('Current URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        console.log('Search:', window.location.search);
+        
         // Parse the hash parameters
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         const type = hashParams.get('type');
 
-        console.log('Auth callback received:', { accessToken, refreshToken, type });
+        console.log('Auth callback received:', { 
+          accessToken: accessToken ? 'present' : 'missing',
+          refreshToken: refreshToken ? 'present' : 'missing',
+          type,
+          hashParams: Object.fromEntries(hashParams.entries())
+        });
 
         if (!accessToken || !refreshToken) {
+          console.error('Missing tokens:', { accessToken, refreshToken });
           throw new Error('No authentication tokens found in URL');
         }
 
         // Set the session using the tokens
+        console.log('Attempting to set session...');
         const { data: { session }, error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
 
         if (sessionError) {
+          console.error('Session error:', sessionError);
           throw sessionError;
         }
 
         if (!session) {
+          console.error('No session established');
           throw new Error('Failed to establish session');
         }
 
-        console.log('Session established:', session.user.id);
+        console.log('Session established:', {
+          userId: session.user.id,
+          email: session.user.email,
+          metadata: session.user.user_metadata
+        });
 
         // Get the user profile
         const { data: profile, error: profileError } = await supabase
