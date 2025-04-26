@@ -68,6 +68,17 @@ console.log('Supabase client config:', {
 
 // Function to sign in with Google
 export const signInWithGoogle = async () => {
+  // Get the current domain
+  const currentDomain = window.location.hostname;
+  
+  // If we're on the main domain, redirect to the preview domain's auth page
+  if (currentDomain === 'stashflow.vercel.app') {
+    // Get the preview domain from the environment or use a fallback
+    const previewDomain = import.meta.env.VITE_PREVIEW_DOMAIN || 'stashflow-git-main-stashflow.vercel.app';
+    window.location.href = `https://${previewDomain}/auth`;
+    return;
+  }
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
