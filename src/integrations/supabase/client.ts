@@ -31,11 +31,11 @@ export const supabase = createClient<Database>(
       storage: {
         getItem: (key: string) => {
           const item = localStorage.getItem(key);
-          console.log(`Getting item from storage: ${key}`, item);
+          console.log(`Getting item from storage: ${key}`, item ? 'present' : 'missing');
           return item;
         },
         setItem: (key: string, value: string) => {
-          console.log(`Setting item in storage: ${key}`, value);
+          console.log(`Setting item in storage: ${key}`, value ? 'value present' : 'value missing');
           localStorage.setItem(key, value);
         },
         removeItem: (key: string) => {
@@ -51,3 +51,11 @@ export const supabase = createClient<Database>(
     }
   }
 );
+
+// Log initial configuration
+console.log('Supabase client configured with:', {
+  url: supabaseUrl,
+  origin: window.location.origin,
+  pathname: window.location.pathname,
+  hash: window.location.hash
+});

@@ -48,16 +48,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Current URL:', currentUrl.toString());
         
         // Create the redirect URL with hash
-        const redirectUrl = new URL(currentUrl.origin + currentUrl.pathname);
-        redirectUrl.hash = '/auth/callback';
+        const redirectUrl = window.location.origin + '/#/auth/callback';
         
-        console.log('Auth redirect URL:', redirectUrl.toString());
+        console.log('Auth redirect URL:', redirectUrl);
         console.log('Current window location:', window.location.href);
+        console.log('Window origin:', window.location.origin);
         
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: redirectUrl.toString(),
+            redirectTo: redirectUrl,
             skipBrowserRedirect: false,
             queryParams: {
               access_type: 'offline',
@@ -65,6 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           },
         });
+        
+        console.log('OAuth response:', { data, error });
         
         if (error) {
           console.error('OAuth error:', error);

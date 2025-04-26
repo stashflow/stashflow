@@ -18,7 +18,57 @@ export default function AuthCallback() {
         console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
         
-        // Parse the hash parameters
+        // First try to get the session directly
+        const { data: { session: existingSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (existingSession) {
+          console.log('Found existing session:', {
+            userId: existingSession.user.id,
+            email: existingSession.user.email,
+            metadata: existingSession.user.user_metadata
+          });
+          
+          // Get the user profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', existingSession.user.id)
+            .single();
+
+          if (profileError) {
+            // If no profile exists, create one
+            const { error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: existingSession.user.id,
+                username: existingSession.user.email?.split('@')[0] || 'user',
+                full_name: existingSession.user.user_metadata?.full_name || '',
+                avatar_url: existingSession.user.user_metadata?.avatar_url || null,
+                updated_at: new Date().toISOString()
+              });
+
+            if (createError) {
+              console.error('Profile creation error:', createError);
+              throw createError;
+            }
+
+            console.log('Created new user profile');
+          } else {
+            console.log('Found existing profile');
+          }
+
+          // Show success message
+          toast.success('Successfully signed in!');
+          
+          // Clear any hash from the URL to prevent redirect loops
+          window.location.hash = '';
+          
+          // Redirect to home page
+          window.location.href = window.location.origin;
+          return;
+        }
+        
+        // If no session exists, try to parse the hash parameters
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -38,14 +88,14 @@ export default function AuthCallback() {
 
         // Set the session using the tokens
         console.log('Attempting to set session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.setSession({
+        const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
 
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
+        if (setSessionError) {
+          console.error('Session error:', setSessionError);
+          throw setSessionError;
         }
 
         if (!session) {
@@ -101,7 +151,7 @@ export default function AuthCallback() {
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
         // Redirect to auth page on error
-        window.location.href = window.location.origin + '#/auth';
+        window.location.href = window.location.origin + '/#/auth';
       } finally {
         setProcessing(false);
       }
