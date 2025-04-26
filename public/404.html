@@ -13,9 +13,16 @@
       if (path.includes('/auth/callback') || path.includes('/callback')) {
         console.log('Detected potential auth callback in 404 handler');
         
-        // Get full URL including query params
+        // Get full URL including query params and hash
         const fullUrl = window.location.href;
         console.log('Full URL:', fullUrl);
+        
+        // Check for access_token in hash fragment
+        let hasTokenInHash = false;
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('Found access_token in hash fragment');
+          hasTokenInHash = true;
+        }
         
         // Extract query parameters
         const urlObj = new URL(fullUrl);
@@ -27,19 +34,26 @@
           state: queryParams.get('state') ? 'present' : 'missing',
           error: queryParams.get('error') || 'none',
           error_description: queryParams.get('error_description') || 'none',
-          full_params: queryParams.toString()
+          has_token_in_hash: hasTokenInHash
         });
         
         // Create redirect URL with hash-based routing
         let redirectUrl = window.location.origin + '/#/auth/callback';
         
-        // Append any query parameters
-        if (queryParams.toString()) {
+        // If we have a token in the hash, preserve it
+        if (hasTokenInHash) {
+          redirectUrl = window.location.origin + '/#/auth/callback' + window.location.hash;
+          console.log('Redirecting with token in hash');
+        }
+        // Otherwise use query parameters if available
+        else if (queryParams.toString()) {
           redirectUrl += '?' + queryParams.toString();
           console.log('Redirecting with parameters:', queryParams.toString());
+        } else {
+          console.warn('No auth parameters found');
         }
         
-        console.log('Redirecting to hash-based route:', redirectUrl);
+        console.log('Redirecting to:', redirectUrl);
         
         // Redirect to the correct hash-based URL
         window.location.href = redirectUrl;

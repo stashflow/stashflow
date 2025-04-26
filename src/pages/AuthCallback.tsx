@@ -31,8 +31,67 @@ export default function AuthCallback() {
           code: code ? 'present' : 'missing', 
           state: state ? 'present' : 'missing',
           error: errorParam || 'none',
-          errorDescription: errorDescription || 'none'
+          errorDescription: errorDescription || 'none',
+          has_hash: window.location.hash ? 'yes' : 'no'
         });
+        
+        // If we have a hash with access_token, parse it
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('Found access_token in hash, parsing token data');
+          
+          // Try to directly extract session from URL
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (data.session) {
+            console.log('Session established from hash:', {
+              userId: data.session.user.id,
+              email: data.session.user.email
+            });
+            
+            // Get the user profile
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.session.user.id)
+              .single();
+
+            if (profileError) {
+              // If no profile exists, create one
+              const { error: createError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: data.session.user.id,
+                  username: data.session.user.email?.split('@')[0] || 'user',
+                  full_name: data.session.user.user_metadata?.full_name || '',
+                  avatar_url: data.session.user.user_metadata?.avatar_url || null,
+                  updated_at: new Date().toISOString()
+                });
+
+              if (createError) {
+                console.error('Profile creation error:', createError);
+                throw createError;
+              }
+
+              console.log('Created new user profile');
+            } else {
+              console.log('Found existing profile');
+            }
+
+            // Show success message
+            toast.success('Successfully signed in!');
+            
+            // Clear any hash from the URL to prevent redirect loops
+            window.history.replaceState(null, '', window.location.origin);
+            
+            // Redirect to home page
+            navigate('/');
+            return;
+          } else if (error) {
+            console.error('Error extracting session from hash:', error);
+          } else {
+            console.warn('No session found in hash data');
+          }
+        }
         
         // Check for OAuth errors first
         if (errorParam) {
@@ -236,7 +295,7 @@ export default function AuthCallback() {
     };
 
     handleAuthCallback();
-  }, [location]);
+  }, [location, navigate]);
 
   if (processing) {
     return (

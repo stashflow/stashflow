@@ -7,55 +7,78 @@
   <script>
     // This page handles OAuth redirects from Supabase when hash-based routing fails
     window.onload = function() {
-      console.log('OAuth redirect handler - capturing callback');
+      console.log('OAuth redirect handler - trailing slash version');
       
       // Get full URL including hash
       const fullUrl = window.location.href;
       console.log('Full redirect URL:', fullUrl);
       
-      // Check for parameters in both the query string and hash fragment
+      // Extract tokens from the hash fragment (after #)
+      const hashParams = {};
+      if (window.location.hash) {
+        const hashString = window.location.hash.substring(1); // Remove the leading #
+        console.log('Hash string:', hashString);
+        
+        // Parse hash manually since URLSearchParams doesn't work directly with hashes
+        hashString.split('&').forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            hashParams[key] = decodeURIComponent(value);
+          }
+        });
+        
+        console.log('Found hash parameters:', {
+          access_token: hashParams.access_token ? 'present' : 'missing',
+          refresh_token: hashParams.refresh_token ? 'present' : 'missing',
+          token_type: hashParams.token_type || 'none'
+        });
+      }
+      
+      // Check for parameters in the query string
       const urlObj = new URL(fullUrl);
       const queryParams = urlObj.searchParams;
       
-      // If we're on /auth/callback/ with no params, try checking the referrer
-      if (queryParams.toString() === '' && document.referrer) {
+      console.log('Search params:', { 
+        code: queryParams.get('code') ? 'present' : 'missing',
+        state: queryParams.get('state') ? 'present' : 'missing',
+        error: queryParams.get('error') || 'none',
+        error_description: queryParams.get('error_description') || 'none'
+      });
+      
+      // If we have no parameters but have a referrer, check if it has parameters
+      if (!window.location.hash && queryParams.toString() === '' && document.referrer) {
         console.log('No parameters found, checking referrer:', document.referrer);
         try {
           const referrerUrl = new URL(document.referrer);
-          // If referrer has params, extract and use them
-          if (referrerUrl.searchParams.toString() !== '') {
-            console.log('Found parameters in referrer');
-            // Copy params from referrer
-            referrerUrl.searchParams.forEach((value, key) => {
-              queryParams.append(key, value);
-            });
+          // Log referrer hash if present
+          if (referrerUrl.hash) {
+            console.log('Referrer has hash fragment:', referrerUrl.hash);
           }
         } catch (e) {
           console.error('Error parsing referrer:', e);
         }
       }
       
-      // Log the parameters for debugging
-      console.log('Extracted auth parameters:', {
-        code: queryParams.get('code') ? 'present' : 'missing',
-        state: queryParams.get('state') ? 'present' : 'missing',
-        error: queryParams.get('error') || 'none',
-        error_description: queryParams.get('error_description') || 'none',
-        full_params: queryParams.toString()
-      });
-      
       // Create redirect URL with hash-based routing
       let redirectUrl = window.location.origin + '/#/auth/callback';
       
-      // Append any query parameters
-      if (queryParams.toString()) {
+      // Case 1: We have hash parameters (access_token)
+      if (hashParams.access_token) {
+        console.log('Found access_token, redirecting with token');
+        
+        // Forward the entire hash as-is
+        redirectUrl = window.location.origin + '/#/auth/callback' + window.location.hash;
+      }
+      // Case 2: We have query parameters (code)
+      else if (queryParams.toString()) {
         redirectUrl += '?' + queryParams.toString();
-        console.log('Redirecting with parameters:', queryParams.toString());
-      } else {
-        console.warn('No parameters found to pass to the application');
+        console.log('Redirecting with query parameters:', queryParams.toString());
+      } 
+      else {
+        console.warn('No authentication parameters found!');
       }
       
-      console.log('Redirecting to hash-based route:', redirectUrl);
+      console.log('Redirecting to:', redirectUrl);
       
       // Redirect to the correct hash-based URL
       window.location.href = redirectUrl;
