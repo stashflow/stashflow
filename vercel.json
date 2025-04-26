@@ -22,10 +22,10 @@
       ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/((?!.*\\.\\w+$).*)",
-      "dest": "/index.html"
+      "source": "/((?!.*\\.\\w+$).*)",
+      "destination": "/index.html"
     }
   ]
 } 
