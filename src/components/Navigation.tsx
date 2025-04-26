@@ -123,7 +123,7 @@ export const Navigation = () => {
             variant="ghost"
             size="sm"
             className="ml-4"
-            onClick={() => navigate('/auth')}
+            onClick={() => window.location.href = 'https://stashflow-github-m8iu5a7u8-sickleedges-projects.vercel.app/auth'}
           >
             Sign In
           </Button>
