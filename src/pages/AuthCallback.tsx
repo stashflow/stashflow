@@ -95,13 +95,13 @@ export default function AuthCallback() {
         window.location.hash = '';
         
         // Redirect to home page
-        window.location.href = window.location.origin + window.location.pathname;
+        window.location.href = window.location.origin;
       } catch (err) {
         console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         toast.error('Failed to sign in. Please try again.');
         // Redirect to auth page on error
-        window.location.href = window.location.origin + window.location.pathname + '#/auth';
+        window.location.href = window.location.origin + '#/auth';
       } finally {
         setProcessing(false);
       }
@@ -124,7 +124,7 @@ export default function AuthCallback() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="text-red-500 mb-4">{error}</div>
         <button 
-          onClick={() => window.location.href = window.location.origin + window.location.pathname + '#/auth'}
+          onClick={() => window.location.href = window.location.origin + '#/auth'}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Return to Sign In
