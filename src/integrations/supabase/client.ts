@@ -32,7 +32,6 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      // Use PKCE flow for Vercel
       flowType: 'pkce',
       storage: {
         getItem: (key: string) => {
@@ -75,7 +74,9 @@ export const signInWithGoogle = async () => {
       redirectTo: redirectUrl,
       queryParams: {
         access_type: 'offline',
-        prompt: 'consent'
+        prompt: 'consent',
+        response_type: 'code',
+        scope: 'email profile'
       }
     }
   });
