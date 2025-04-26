@@ -1,18 +1,64 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Redirecting...</title>
-    <script>
-      // Get the current path and redirect to index.html with that path
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found</title>
+  <script>
+    window.onload = function() {
       const path = window.location.pathname;
-      // Remove any existing /index.html from the path to prevent loops
-      const cleanPath = path.replace(/\/index\.html/g, '');
-      // Redirect to the root with the hash
-      window.location.href = '/#' + cleanPath;
-    </script>
-  </head>
-  <body>
-    <p>Redirecting...</p>
-  </body>
+      console.log('404 handler - path:', path);
+      
+      // Check if this might be an auth callback
+      if (path.includes('/auth/callback') || path.includes('/callback')) {
+        console.log('Detected potential auth callback in 404 handler');
+        
+        // Get full URL including query params
+        const fullUrl = window.location.href;
+        console.log('Full URL:', fullUrl);
+        
+        // Extract query parameters
+        const urlObj = new URL(fullUrl);
+        const queryParams = urlObj.searchParams;
+        
+        // Log the parameters for debugging
+        console.log('Extracted auth parameters:', {
+          code: queryParams.get('code') ? 'present' : 'missing',
+          state: queryParams.get('state') ? 'present' : 'missing',
+          error: queryParams.get('error') || 'none',
+          error_description: queryParams.get('error_description') || 'none',
+          full_params: queryParams.toString()
+        });
+        
+        // Create redirect URL with hash-based routing
+        let redirectUrl = window.location.origin + '/#/auth/callback';
+        
+        // Append any query parameters
+        if (queryParams.toString()) {
+          redirectUrl += '?' + queryParams.toString();
+          console.log('Redirecting with parameters:', queryParams.toString());
+        }
+        
+        console.log('Redirecting to hash-based route:', redirectUrl);
+        
+        // Redirect to the correct hash-based URL
+        window.location.href = redirectUrl;
+        return;
+      }
+      
+      // For other routes, redirect to the main app
+      const redirectUrl = window.location.origin + '/#' + path;
+      console.log('Redirecting to hash route:', redirectUrl);
+      window.location.href = redirectUrl;
+    };
+  </script>
+</head>
+<body>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui, sans-serif;">
+    <div style="text-align: center;">
+      <h2>Redirecting...</h2>
+      <p>Please wait while we redirect you to the correct page.</p>
+    </div>
+  </div>
+</body>
 </html> 

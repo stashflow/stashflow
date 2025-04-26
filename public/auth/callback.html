@@ -5,35 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redirecting...</title>
   <script>
-    // This page handles OAuth redirects from Supabase when hash-based routing fails
+    // This page handles OAuth redirects for the /auth/callback path (without trailing slash)
     window.onload = function() {
-      console.log('OAuth redirect handler - capturing callback');
+      console.log('OAuth redirect handler - no trailing slash version');
       
       // Get full URL including hash
       const fullUrl = window.location.href;
       console.log('Full redirect URL:', fullUrl);
       
-      // Check for parameters in both the query string and hash fragment
+      // Get query parameters
       const urlObj = new URL(fullUrl);
       const queryParams = urlObj.searchParams;
-      
-      // If we're on /auth/callback/ with no params, try checking the referrer
-      if (queryParams.toString() === '' && document.referrer) {
-        console.log('No parameters found, checking referrer:', document.referrer);
-        try {
-          const referrerUrl = new URL(document.referrer);
-          // If referrer has params, extract and use them
-          if (referrerUrl.searchParams.toString() !== '') {
-            console.log('Found parameters in referrer');
-            // Copy params from referrer
-            referrerUrl.searchParams.forEach((value, key) => {
-              queryParams.append(key, value);
-            });
-          }
-        } catch (e) {
-          console.error('Error parsing referrer:', e);
-        }
-      }
       
       // Log the parameters for debugging
       console.log('Extracted auth parameters:', {
