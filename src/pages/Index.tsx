@@ -63,8 +63,12 @@ export default function Index() {
             
             {!user && (
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                <Button asChild size="lg" className="bg-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)]/90 text-white w-full sm:w-auto">
-                  <Link to="/auth">Get Started</Link>
+                <Button 
+                  size="lg" 
+                  className="bg-[color:var(--color-primary)] hover:bg-[color:var(--color-primary)]/90 text-white w-full sm:w-auto"
+                  onClick={() => window.location.href = 'https://stashflow-github-m8iu5a7u8-sickleedges-projects.vercel.app/auth'}
+                >
+                  Get Started
                 </Button>
                 <Button asChild size="lg" variant="outline" className="border-[color:var(--color-accent)] text-[color:var(--color-accent)] hover:bg-[color:var(--color-accent)]/10 w-full sm:w-auto">
                   <Link to="/notes">Browse Notes</Link>
