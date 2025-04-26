@@ -13,48 +13,39 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Check if we have a code in the URL (OAuth flow)
-        const params = new URLSearchParams(location.search);
-        const code = params.get('code');
+        console.log('Starting auth callback...');
+        console.log('Current URL:', window.location.href);
         
-        if (code) {
-          console.log('Auth code detected in URL, processing OAuth callback...');
-          
-          // Exchange the code for a session
-          const { data: authData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          
-          if (exchangeError) {
-            console.error('Code exchange error:', exchangeError);
-            throw exchangeError;
-          }
-          
-          if (!authData.session) {
-            throw new Error('No session returned from code exchange');
-          }
-          
-          console.log('Successfully exchanged code for session');
-        }
-        
-        // Now get the current session
-        const { data, error: sessionError } = await supabase.auth.getSession();
+        // First try to get the session from the URL
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Session error:', sessionError);
           throw sessionError;
         }
 
-        const { session } = data;
         if (!session) {
-          throw new Error('No session found');
+          // If no session, try to get it from the URL
+          const { data: { session: urlSession }, error: urlError } = await supabase.auth.getSession();
+          
+          if (urlError) {
+            console.error('URL session error:', urlError);
+            throw urlError;
+          }
+
+          if (!urlSession) {
+            throw new Error('No session found');
+          }
         }
 
-        console.log('Session obtained:', session.user.id);
+        const currentSession = session || urlSession;
+        console.log('Session obtained:', currentSession?.user.id);
 
         // Get the user profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
 
         if (profileError) {
@@ -63,10 +54,10 @@ export default function AuthCallback() {
             .from('profiles')
             .insert([
               {
-                id: session.user.id,
-                username: session.user.email?.split('@')[0] || 'user',
-                full_name: session.user.user_metadata?.full_name || '',
-                avatar_url: session.user.user_metadata?.avatar_url || null,
+                id: currentSession.user.id,
+                username: currentSession.user.email?.split('@')[0] || 'user',
+                full_name: currentSession.user.user_metadata?.full_name || '',
+                avatar_url: currentSession.user.user_metadata?.avatar_url || null,
                 updated_at: new Date().toISOString()
               }
             ]);

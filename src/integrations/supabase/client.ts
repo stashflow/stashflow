@@ -2,15 +2,27 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Log all environment variables for debugging
+console.log('All environment variables:', import.meta.env);
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// More detailed logging
 console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Anon Key:', supabaseAnonKey?.substring(0, 10) + '...');
+console.log('Supabase Anon Key length:', supabaseAnonKey?.length);
+console.log('Supabase Anon Key first 10 chars:', supabaseAnonKey?.substring(0, 10));
+console.log('Current origin:', window.location.origin);
 console.log('Auth redirect URL:', window.location.origin + '/auth/callback');
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+if (!supabaseUrl) {
+  console.error('Missing Supabase URL');
+  throw new Error('Missing Supabase URL environment variable');
+}
+
+if (!supabaseAnonKey) {
+  console.error('Missing Supabase Anon Key');
+  throw new Error('Missing Supabase Anon Key environment variable');
 }
 
 // Create headers object with the API key
