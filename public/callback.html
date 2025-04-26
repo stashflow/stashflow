@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // This is a fallback handler for any OAuth redirects
+    window.onload = function() {
+      console.log('Global callback handler activated');
+      
+      // Get full URL including hash
+      const fullUrl = window.location.href;
+      console.log('Full redirect URL:', fullUrl);
+      
+      // Extract query parameters
+      const urlObj = new URL(fullUrl);
+      const queryParams = urlObj.searchParams;
+      
+      // Log the parameters for debugging
+      console.log('Extracted auth parameters:', {
+        code: queryParams.get('code') ? 'present' : 'missing',
+        state: queryParams.get('state') ? 'present' : 'missing',
+        error: queryParams.get('error') || 'none',
+        error_description: queryParams.get('error_description') || 'none',
+        full_params: queryParams.toString()
+      });
+      
+      // Create redirect URL with hash-based routing
+      let redirectUrl = window.location.origin + '/#/auth/callback';
+      
+      // Append any query parameters
+      if (queryParams.toString()) {
+        redirectUrl += '?' + queryParams.toString();
+        console.log('Redirecting with parameters:', queryParams.toString());
+      } else {
+        console.warn('No parameters found to pass to the application');
+      }
+      
+      console.log('Redirecting to hash-based route:', redirectUrl);
+      
+      // Redirect to the correct hash-based URL
+      window.location.href = redirectUrl;
+    };
+  </script>
+</head>
+<body>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: system-ui, sans-serif;">
+    <div style="text-align: center;">
+      <h2>Completing sign-in...</h2>
+      <p>Please wait while we redirect you.</p>
+    </div>
+  </div>
+</body>
+</html> 

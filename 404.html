@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+      // Get the current path and redirect to index.html with that path
+      const path = window.location.pathname;
+      // Remove any existing /index.html from the path to prevent loops
+      const cleanPath = path.replace(/\/index\.html/g, '');
+      // Redirect to the root with the hash
+      window.location.href = '/#' + cleanPath;
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html> 

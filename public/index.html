@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>stash - notes sharing platform</title>
+    <script>
+      // Check for auth hash fragments and save them before they're processed
+      window.onload = function() {
+        // Check if we have auth parameters in the URL
+        if (window.location.hash && window.location.hash.includes('access_token') || 
+            window.location.search && window.location.search.includes('code=')) {
+          console.log('Auth parameters detected on root page load');
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 

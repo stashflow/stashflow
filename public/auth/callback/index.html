@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // This page handles OAuth redirects from Supabase
+    window.onload = function() {
+      console.log('OAuth redirect handler');
+      
+      // Get full URL including hash
+      const fullUrl = window.location.href;
+      console.log('Full redirect URL:', fullUrl);
+      
+      // Extract tokens from the hash fragment (after #)
+      const hashParams = {};
+      if (window.location.hash) {
+        const hashString = window.location.hash.substring(1); // Remove the leading #
+        console.log('Hash string:', hashString);
+        
+        // Parse hash manually since URLSearchParams doesn't work directly with hashes
+        hashString.split('&').forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            hashParams[key] = decodeURIComponent(value);
+          }
+        });
+        
+        console.log('Found hash parameters:', {
+          access_token: hashParams.access_token ? 'present' : 'missing',
+          refresh_token: hashParams.refresh_token ? 'present' : 'missing',
+          token_type: hashParams.token_type || 'none'
+        });
+      }
+      
+      // Check for parameters in the query string
+      const urlObj = new URL(fullUrl);
+      const queryParams = urlObj.searchParams;
+      
+      console.log('Search params:', { 
+        code: queryParams.get('code') ? 'present' : 'missing',
+        state: queryParams.get('state') ? 'present' : 'missing',
+        error: queryParams.get('error') || 'none',
+        error_description: queryParams.get('error_description') || 'none'
+      });
+      
+      // If we have tokens in the hash, redirect to the main app
+      if (hashParams.access_token) {
+        console.log('Found tokens in hash, redirecting to main app...');
+        // Store the tokens in localStorage
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          access_token: hashParams.access_token,
+          refresh_token: hashParams.refresh_token,
+          expires_at: hashParams.expires_at,
+          token_type: hashParams.token_type
+        }));
+        // Redirect to the main app without the hash
+        window.location.href = '/';
+        return;
+      }
+      
+      // If we have a code in the query params, redirect to the main app
+      if (queryParams.get('code')) {
+        console.log('Found code in query params, redirecting to main app...');
+        window.location.href = '/';
+        return;
+      }
+      
+      // If we have an error, show it
+      if (queryParams.get('error')) {
+        console.error('Auth error:', {
+          error: queryParams.get('error'),
+          description: queryParams.get('error_description')
+        });
+        document.body.innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <h1>Authentication Error</h1>
+            <p>${queryParams.get('error_description') || queryParams.get('error')}</p>
+            <button onclick="window.location.href='/auth'">Try Again</button>
+          </div>
+        `;
+        return;
+      }
+      
+      // If we get here, something went wrong
+      console.error('No auth data found in URL');
+      document.body.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <h1>Authentication Error</h1>
+          <p>No authentication data found. Please try signing in again.</p>
+          <button onclick="window.location.href='/auth'">Try Again</button>
+        </div>
+      `;
+    };
+  </script>
+</head>
+<body>
+  <div style="text-align: center; padding: 20px;">
+    <h1>Redirecting...</h1>
+    <p>Please wait while we complete your authentication.</p>
+  </div>
+</body>
+</html> 
