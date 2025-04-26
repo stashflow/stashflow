@@ -29,14 +29,17 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       storage: {
-        getItem: (key) => {
+        getItem: (key: string) => {
           const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : null;
+          console.log(`Getting item from storage: ${key}`, item);
+          return item;
         },
-        setItem: (key, value) => {
-          localStorage.setItem(key, JSON.stringify(value));
+        setItem: (key: string, value: string) => {
+          console.log(`Setting item in storage: ${key}`, value);
+          localStorage.setItem(key, value);
         },
-        removeItem: (key) => {
+        removeItem: (key: string) => {
+          console.log(`Removing item from storage: ${key}`);
           localStorage.removeItem(key);
         }
       }
