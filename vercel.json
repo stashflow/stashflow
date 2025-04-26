@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/assets/(.*)\\.js$",
+      "source": "/(.*)\\.js$",
       "headers": [
         {
           "key": "Content-Type",
@@ -13,16 +13,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)\\.mjs$",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "source": "/assets/(.*)\\.css$",
+      "source": "/(.*)\\.css$",
       "headers": [
         {
           "key": "Content-Type",
@@ -32,10 +23,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
