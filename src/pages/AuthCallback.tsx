@@ -17,6 +17,69 @@ export default function AuthCallback() {
         console.log('Current URL:', window.location.href);
         console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
+        console.log('Location state:', location.state);
+        console.log('Location pathname:', location.pathname);
+        
+        // Check if we have code+state in search params (implicit flow)
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
+        
+        console.log('Search params:', { code: code ? 'present' : 'missing', state: state ? 'present' : 'missing' });
+        
+        if (code && state) {
+          console.log('Detected authorization code flow, attempting to exchange code for session');
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            console.log('Code exchange result:', { success: !!data.session, error: error?.message });
+            
+            if (error) throw error;
+            if (data.session) {
+              console.log('Session established via code exchange:', {
+                userId: data.session.user.id,
+                email: data.session.user.email
+              });
+              
+              // Get the user profile
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', data.session.user.id)
+                .single();
+
+              if (profileError) {
+                // If no profile exists, create one
+                const { error: createError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: data.session.user.id,
+                    username: data.session.user.email?.split('@')[0] || 'user',
+                    full_name: data.session.user.user_metadata?.full_name || '',
+                    avatar_url: data.session.user.user_metadata?.avatar_url || null,
+                    updated_at: new Date().toISOString()
+                  });
+
+                if (createError) {
+                  console.error('Profile creation error:', createError);
+                  throw createError;
+                }
+
+                console.log('Created new user profile');
+              } else {
+                console.log('Found existing profile');
+              }
+
+              // Show success message
+              toast.success('Successfully signed in!');
+              
+              // Redirect to home page (with cleared hash)
+              window.location.href = window.location.origin;
+              return;
+            }
+          } catch (exchangeError) {
+            console.error('Code exchange error:', exchangeError);
+          }
+        }
         
         // First try to get the session directly
         const { data: { session: existingSession }, error: sessionError } = await supabase.auth.getSession();

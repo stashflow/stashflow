@@ -43,17 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (provider: 'google' | 'email', credentials?: { email: string; password: string }) => {
     try {
       if (provider === 'google') {
-        // Get the current URL with hash-based routing
-        const currentUrl = new URL(window.location.href);
-        console.log('Current URL:', currentUrl.toString());
+        console.log('Starting Google OAuth sign-in');
         
-        // Create the redirect URL with hash
+        // For GitHub Pages, we need to use the hash-based redirect URL
         const redirectUrl = window.location.origin + '/#/auth/callback';
         
         console.log('Auth redirect URL:', redirectUrl);
-        console.log('Current window location:', window.location.href);
-        console.log('Window origin:', window.location.origin);
+        console.log('Current URL:', window.location.href);
         
+        // Use PKCE flow for better security and support
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -61,19 +59,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             skipBrowserRedirect: false,
             queryParams: {
               access_type: 'offline',
-              prompt: 'consent'
+              prompt: 'consent',
             }
           },
         });
         
-        console.log('OAuth response:', { data, error });
+        console.log('OAuth sign-in initiated:', { 
+          url: data?.url ? 'Generated' : 'Missing',
+          provider: 'google',
+          redirectTo: redirectUrl
+        });
         
         if (error) {
-          console.error('OAuth error:', error);
+          console.error('OAuth initiation error:', error);
           throw error;
         }
         
-        // The browser will redirect to the OAuth provider
+        // Browser will redirect to Google
         return;
       } else if (provider === 'email' && credentials) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -100,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/#/auth/callback`,
         },
       });
 
