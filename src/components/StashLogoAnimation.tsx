@@ -78,6 +78,10 @@ const StashLogoAnimation: React.FC<StashLogoAnimationProps> = ({
             duration: 0.5,
             repeat: 2,
             repeatType: "reverse"
+          },
+          filter: {
+            duration: 0.3,
+            ease: "easeOut"
           }
         }}
       >
@@ -100,7 +104,11 @@ const StashLogoAnimation: React.FC<StashLogoAnimationProps> = ({
           duration: 0.5,
           type: "spring",
           stiffness: 200,
-          damping: 15
+          damping: 15,
+          filter: {
+            duration: 0.3,
+            ease: "easeOut"
+          }
         }}
       >
         <motion.span

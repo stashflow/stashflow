@@ -29,7 +29,7 @@ export const themes = {
       secondary: '#9c27b0',
       background: '#000000',
       card: '#141414',
-      text: '#e0e0e0',
+      text: '#ffffff',
       accent: '#1de9b6',
       success: '#4caf50',
       warning: '#ff9800',
